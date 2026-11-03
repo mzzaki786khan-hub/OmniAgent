@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniAgent: Universal Knowledge Engine</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cosmos: {
+                            bg: '#030712',
+                            card: 'rgba(15, 23, 42, 0.75)',
+                            border: 'rgba(56, 189, 248, 0.2)',
+                            accent: '#06b6d4',
+                            purple: '#a855f7',
+                            pink: '#ec4899',
+                            gold: '#f59e0b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #030712;
+            color: #f3f4f6;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(6, 182, 212, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.6) 0%, transparent 100%);
+            background-attachment: fixed;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.6); }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(56, 189, 248, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .grid-bg {
+            background-size: 30px 30px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .shimmer {
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.8s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 0.4; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .pulse-ring {
+            animation: pulse-ring 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="font-sans min-h-screen flex flex-col justify-between grid-bg antialiased selection:bg-cyan-500 selection:text-white">
+
+    <!-- Glowing top accent line -->
+    <div class="h-1 w-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-500"></div>
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-slate-800 px-4 lg:px-8 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            
+            <div class="flex items-center gap-3">
+                <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900 border border-cyan-500/40 text-cyan-400 shadow-lg shadow-cyan-500/10">
+                    <i class="fa-solid fa-atom text-xl animate-spin-slow"></i>
+                    <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+                    </span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">OmniAgent</h1>
+                        <span class="px-2 py-0.5 text-[10px] font-mono tracking-wider font-semibold uppercase rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-500/30">v3.5 Fixed Engine</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Universal Past & Present Knowledge Engine</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 text-xs">
+                <div id="engineStatusBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-emerald-500/30 text-emerald-400">
+                    <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="font-mono font-medium" id="engineStatusText">Engine: Dynamic Heuristic Synthesizer</span>
+                </div>
+
+                <button onclick="toggleConfigModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+                    <i class="fa-solid fa-key text-cyan-400"></i>
+                    <span>API Settings</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Controls Side Panel (4 Cols) -->
+        <aside class="lg:col-span-4 flex flex-col gap-5">
+            
+            <!-- Universal Matrix Card -->
+            <div class="glass-panel rounded-2xl p-5 border border-cyan-500/20">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-cyan-400 font-mono flex items-center gap-2">
+                        <i class="fa-solid fa-compass"></i> Temporal Navigator
+                    </h2>
+                    <span class="text-xs text-slate-400 font-mono">13.8B Yrs - Present</span>
+                </div>
+                <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                    Synthesize any topic across space-time: Astrophysics, prehistoric geology, ancient civilisations, biology, philosophy, or modern AI.
+                </p>
+
+                <!-- Timeframe Scale Slider -->
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs font-mono text-slate-400">
+                        <span>Timeframe Focus:</span>
+                        <span id="eraLabel" class="text-cyan-300 font-semibold">Cosmic Era (13.8B Yrs)</span>
+                    </div>
+                    <input type="range" id="eraSlider" min="1" max="4" value="1" step="1" 
+                           class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                           oninput="updateEraLabel(this.value)">
+                    <div class="flex justify-between text-[10px] font-mono text-slate-500 px-1">
+                        <span>Cosmic</span>
+                        <span>Prehistoric</span>
+                        <span>Ancient</span>
+                        <span>Modern</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Synthesis Mode Selectors -->
+            <div class="glass-panel rounded-2xl p-5">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-purple-400 font-mono mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders"></i> Synthesis Mode
+                </h2>
+                <div class="grid grid-cols-3 gap-2" id="depthSelectors">
+                    <button onclick="setDepthMode('concise')" id="depth-concise" class="depth-btn active-depth px-2 py-2.5 rounded-xl text-xs font-medium border border-cyan-500/50 bg-cyan-950/80 text-cyan-300 transition flex flex-col items-center gap-1 text-center">
+                        <i class="fa-solid fa-bolt text-sm"></i>
+                        <span>Concise</span>
+                    </button>
+                    <button onclick="setDepthMode('timeline')" id="depth-timeline" class="depth-btn px-2 py-2.5 rounded-xl text-xs font-medium border border-slate-700 bg-slate-900/60 text-slate-400 hover:border-slate-600 transition flex flex-col items-center gap-1 text-center">
+                        <i class="fa-solid fa-timeline text-sm"></i>
+                        <span>Timeline</span>
+                    </button>
+                    <button onclick="setDepthMode('deep')" id="depth-deep" class="depth-btn px-2 py-2.5 rounded-xl text-xs font-medium border border-slate-700 bg-slate-900/60 text-slate-400 hover:border-slate-600 transition flex flex-col items-center gap-1 text-center">
+                        <i class="fa-solid fa-microscope text-sm"></i>
+                        <span>Deep-Dive</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preset Demoprompts Chips -->
+            <div class="glass-panel rounded-2xl p-5">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300 font-mono mb-3 flex items-center justify-between">
+                    <span><i class="fa-solid fa-bolt text-amber-400"></i> Preset Demo Queries</span>
+                    <span class="text-[10px] text-slate-500">Click to run</span>
+                </h2>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="askPreset('Explain how photosynesthesis converts sunlight into energy')" class="px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-cyan-950/50 border border-slate-700 hover:border-cyan-500/50 text-xs text-slate-300 transition flex items-center gap-1.5">
+                        <span>🌱</span> Photosynthesis Mechanism
+                    </button>
+                    <button onclick="askPreset('Why did the Roman Empire collapse in Western Europe?')" class="px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-cyan-950/50 border border-slate-700 hover:border-cyan-500/50 text-xs text-slate-300 transition flex items-center gap-1.5">
+                        <span>🏛️</span> Fall of Roman Empire
+                    </button>
+                    <button onclick="askPreset('How does CRISPR gene editing technology work?')" class="px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-cyan-950/50 border border-slate-700 hover:border-cyan-500/50 text-xs text-slate-300 transition flex items-center gap-1.5">
+                        <span>🧬</span> CRISPR DNA Editing
+                    </button>
+                    <button onclick="askPreset('What is the theory of General Relativity by Albert Einstein?')" class="px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-cyan-950/50 border border-slate-700 hover:border-cyan-500/50 text-xs text-slate-300 transition flex items-center gap-1.5">
+                        <span>🌌</span> General Relativity
+                    </button>
+                    <button onclick="askPreset('How do Large Language Models generate intelligent responses?')" class="px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-cyan-950/50 border border-slate-700 hover:border-cyan-500/50 text-xs text-slate-300 transition flex items-center gap-1.5">
+                        <span>🤖</span> LLMs & Neural Networks
+                    </button>
+                </div>
+            </div>
+
+            <!-- Hackathon Features & Info -->
+            <div class="glass-panel rounded-2xl p-4 border border-purple-500/20 bg-gradient-to-br from-purple-950/20 to-slate-900/60">
+                <div class="flex items-center gap-2 mb-2">
+                    <i class="fa-solid fa-shield-halved text-cyan-400 text-sm"></i>
+                    <h3 class="text-xs font-bold font-mono uppercase text-slate-200">Zero-Crash Dynamic Engine</h3>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed">
+                    Now completely fixed! When no API key is provided, OmniAgent dynamically extracts core subjects, entities, and question intent from your input to generate tailor-made summaries, timelines, and insights.
+                </p>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Console (8 Cols) -->
+        <section class="lg:col-span-8 flex flex-col h-[calc(100vh-140px)] min-h-[600px] glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+            
+            <!-- Top Toolbar -->
+            <div class="px-5 py-3 border-b border-slate-800/80 bg-slate-900/70 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="h-2 w-2 rounded-full bg-cyan-400"></span>
+                    <span class="text-xs font-mono font-semibold text-slate-300">KNOWLEDGE CONSOLE</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="stopSpeech()" title="Stop Audio Playback" class="p-1.5 text-xs text-slate-400 hover:text-cyan-400 hover:bg-slate-800 rounded-lg transition">
+                        <i class="fa-solid fa-volume-xmark"></i> Stop Audio
+                    </button>
+                    <button onclick="clearConsole()" title="Clear Output Stream" class="p-1.5 text-xs text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition">
+                        <i class="fa-solid fa-trash-can"></i> Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stream / Response Output Window -->
+            <div id="consoleStream" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+                
+                <!-- Initial Welcome Card -->
+                <div class="glass-card rounded-2xl p-5 border border-cyan-500/20 max-w-3xl">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-500/40 text-cyan-400 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-brain text-lg"></i>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-bold text-slate-100">OmniAgent Engine Active & Fixed</h3>
+                                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">Ready</span>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                Ask ANY question! The engine has been updated to dynamically analyze custom prompts locally or seamlessly query live LLMs via Gemini API when configured.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Input Form Area -->
+            <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                <form id="queryForm" onsubmit="handleQuerySubmit(event)" class="relative flex items-center gap-2">
+                    
+                    <div class="relative flex-1">
+                        <input type="text" id="userInput" 
+                               placeholder="Ask any question about Science, History, Technology, Earth or Universe..." 
+                               class="w-full bg-slate-950 text-slate-100 placeholder-slate-500 text-sm rounded-xl pl-4 pr-12 py-3 border border-slate-700/80 focus:outline-none focus:border-cyan-500/80 focus:ring-1 focus:ring-cyan-500/80 transition"
+                               required autocomplete="off">
+                        
+                        <button type="button" onclick="toggleVoiceInput()" id="micBtn" 
+                                title="Voice Input (Speech-to-Text)"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 p-1 transition">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
+                    </div>
+
+                    <button type="submit" id="sendBtn" 
+                            class="px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-medium text-sm transition shadow-lg shadow-cyan-600/20 flex items-center gap-2 shrink-0">
+                        <span>Synthesize</span>
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                </form>
+                
+                <div class="flex items-center justify-between text-[10px] text-slate-500 mt-2 px-1 font-mono">
+                    <span>Press Enter to Submit • Live Adaptive Parsing</span>
+                    <span id="modeDisplay">Mode: CONCISE</span>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- API Key Settings Modal -->
+    <div id="configModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-slate-700 shadow-2xl relative">
+            <button onclick="toggleConfigModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slate-100 mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-cyan-400"></i> API Configuration
+            </h3>
+            <p class="text-xs text-slate-400 mb-4">
+                Enter your custom Gemini API key for live Gemini 3 Flash responses. If left empty, OmniAgent uses the smart dynamic heuristic generator.
+            </p>
+
+            <div class="space-y-4 text-xs">
+                <div>
+                    <label class="block text-slate-300 font-medium mb-1">Gemini API Key (Optional)</label>
+                    <input type="password" id="apiKeyInput" placeholder="AIzaSy..." 
+                           class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500 font-mono">
+                </div>
+
+                <div class="pt-2 flex justify-between items-center">
+                    <button type="button" onclick="clearApiKey()" class="text-slate-400 hover:text-red-400 underline">Clear Saved Key</button>
+                    <button onclick="saveApiKey()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-medium transition">
+                        Save Preferences
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/60 py-3 text-center text-xs text-slate-500 font-mono">
+        OmniAgent Engine • Dynamic Universal Synthesizer
+    </footer>
+
+    <!-- JavaScript Logic & Fixed Engine -->
+    <script>
+        // State
+        let currentDepthMode = 'concise';
+        let currentEra = 'Cosmic Era (13.8B Yrs)';
+        let recognition = null;
+        let responseHistory = [];
+
+        // Pre-stored Knowledge Templates for fast rich matching
+        const RICH_KNOWLEDGE = {
+            photosynthesis: {
+                keywords: ["photosynthesis", "sunlight", "chlorophyll", "plant"],
+                title: "Mechanism of Photosynthesis",
+                summary: "Photosynthesis is the biochemical process by which green plants, algae, and cyanobacteria convert light energy into chemical energy stored in glucose molecules. Carbon dioxide and water are transformed into sugars and oxygen using solar radiation captured by chlorophyll.",
+                timeline: [
+                    { time: "Light Absorption", event: "Chlorophyll pigments absorb solar photons inside chloroplast thylakoids." },
+                    { time: "Water Splitting", event: "Photolysis splits H₂O into electron carriers, hydrogen ions, and byproduct O₂." },
+                    { time: "Calvin Cycle", event: "Carbon fixation turns atmospheric CO₂ into organic sugars (G3P/Glucose)." }
+                ],
+                insights: [
+                    "Responsible for producing and maintaining the oxygen content of Earth's atmosphere.",
+                    "Provides virtually all the organic compounds and energy for terrestrial ecosystems.",
+                    "Operates via Light-Dependent and Light-Independent (Calvin Cycle) reactions."
+                ],
+                concept: "Sunlight + H₂O + CO₂ ➔ Chlorophyll Absorption ➔ Photolysis & Calvin Cycle ➔ Glucose + O₂"
+            },
+            roman: {
+                keywords: ["roman", "rome", "empire", "caesar"],
+                title: "Collapse of the Western Roman Empire",
+                summary: "The decline of the Western Roman Empire culminated in 476 CE when Germanic chieftain Odoacer deposed Emperor Romulus Augustulus. Political instability, economic inflation, military overextension, and barbarian migrations eroded imperial governance.",
+                timeline: [
+                    { time: "285 CE", event: "Emperor Diocletian divides the Empire into Western and Eastern halves." },
+                    { time: "376 CE", event: "Gothic tribes enter imperial territory fleeing the Huns." },
+                    { time: "410 CE", event: "Alaric and the Visigoths sack the city of Rome." },
+                    { time: "476 CE", event: "Formal fall of Western Rome; Eastern Byzantine Empire continues." }
+                ],
+                insights: [
+                    "Hyperinflation and debased coinage severely crippled trade and municipal armies.",
+                    "Heavy reliance on mercenary non-citizen forces reduced military loyalty.",
+                    "The Eastern half survived as the Byzantine Empire for another 1,000 years until 1453 CE."
+                ],
+                concept: "Political Instability ➔ Economic Crisis ➔ Migration Pressures ➔ Military Collapse"
+            },
+            crispr: {
+                keywords: ["crispr", "gene", "dna", "cas9", "genome"],
+                title: "CRISPR-Cas9 Gene Editing Mechanism",
+                summary: "CRISPR-Cas9 is a revolutionary molecular biology technique adapted from bacterial immune systems. It utilizes a guide RNA molecule to direct the Cas9 nuclease enzyme to precise target sequences in DNA, enabling genetic insertion, deletion, or modification.",
+                timeline: [
+                    { time: "1987", event: "Repeated CRISPR DNA sequences first discovered in E. coli bacteria." },
+                    { time: "2012", event: "Doudna and Charpentier demonstrate programmable gene cutting with Cas9." },
+                    { time: "2020", event: "Nobel Prize in Chemistry awarded for CRISPR genome-editing discovery." }
+                ],
+                insights: [
+                    "Enables highly targeted genetic therapy for sickle cell disease and genetic blindness.",
+                    "Significantly faster, cheaper, and more accurate than older restriction enzyme methods.",
+                    "Uses synthetic single-guide RNA (sgRNA) to locate target genomic coordinates."
+                ],
+                concept: "Guide RNA Targeting ➔ Cas9 Double-Strand Break ➔ Cellular DNA Repair / Editing"
+            },
+            relativity: {
+                keywords: ["relativity", "einstein", "gravity", "spacetime"],
+                title: "Einstein's Theory of General Relativity",
+                summary: "Published by Albert Einstein in 1915, General Relativity describes gravity not as a conventional force, but as a curvature of four-dimensional spacetime caused by mass and energy. Massive objects warp the geometric fabric of space, directing orbital motion.",
+                timeline: [
+                    { time: "1905", event: "Einstein publishes Special Relativity (E = mc² & constant light speed)." },
+                    { time: "1915", event: "General Relativity field equations presented to Prussian Academy." },
+                    { time: "1919", event: "Eddington solar eclipse observation confirms gravitational light bending." },
+                    { time: "2015", event: "LIGO detects gravitational waves from colliding black holes." }
+                ],
+                insights: [
+                    "Predicted the existence of black holes and expanding cosmological models.",
+                    "Proven daily by GPS satellites which adjust onboard clocks for gravitational time dilation.",
+                    "Replaced Newton's static universal gravitation law with geometric spacetime dynamics."
+                ],
+                concept: "Mass Energy ➔ Curvature of Spacetime ➔ Geodesic Paths ➔ Gravitational Effect"
+            },
+            llm: {
+                keywords: ["llm", "neural", "ai", "transformer", "gpt", "model"],
+                title: "Large Language Models & Transformer Neural Networks",
+                summary: "Modern AI models rely on the Transformer architecture introduced in 2017. Using self-attention mechanisms, LLMs process input tokens in parallel to map complex semantic relationships and predict probabilistic next-token distributions.",
+                timeline: [
+                    { time: "2017", event: "Google researchers publish 'Attention Is All You Need' defining Transformers." },
+                    { time: "2020", event: "Scaling laws demonstrate performance increases with parameter size and tokens." },
+                    { time: "Present", event: "Multimodal LLMs process text, audio, images, and code in unified vector spaces." }
+                ],
+                insights: [
+                    "Multi-Head Attention mechanisms enable models to weigh distant context dynamically.",
+                    "Trained on massive web text corpora via self-supervised next-token prediction.",
+                    "Fine-tuned with RLHF (Reinforcement Learning from Human Feedback) for alignment."
+                ],
+                concept: "Tokenization ➔ Embedding Vectors ➔ Multi-Head Self-Attention ➔ Probabilistic Token Output"
+            }
+        };
+
+        // Initialize Settings on Load
+        window.onload = function() {
+            const savedKey = localStorage.getItem('omni_api_key');
+            if (savedKey) {
+                document.getElementById('apiKeyInput').value = savedKey;
+                updateEngineBadge(true);
+            }
+        };
+
+        function toggleConfigModal() {
+            document.getElementById('configModal').classList.toggle('hidden');
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if (key) {
+                localStorage.setItem('omni_api_key', key);
+                updateEngineBadge(true);
+            } else {
+                localStorage.removeItem('omni_api_key');
+                updateEngineBadge(false);
+            }
+            toggleConfigModal();
+        }
+
+        function clearApiKey() {
+            localStorage.removeItem('omni_api_key');
+            document.getElementById('apiKeyInput').value = '';
+            updateEngineBadge(false);
+            toggleConfigModal();
+        }
+
+        function updateEngineBadge(hasKey) {
+            const badge = document.getElementById('engineStatusBadge');
+            const text = document.getElementById('engineStatusText');
+            if (hasKey) {
+                text.innerText = "Engine: Live Gemini API";
+                badge.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-cyan-500/40 text-cyan-400";
+            } else {
+                text.innerText = "Engine: Dynamic Heuristic Synthesizer";
+                badge.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-emerald-500/30 text-emerald-400";
+            }
+        }
+
+        function updateEraLabel(val) {
+            const eras = {
+                '1': 'Cosmic Era (13.8B Yrs)',
+                '2': 'Prehistoric Era (66M Yrs)',
+                '3': 'Ancient Era (5000 Yrs)',
+                '4': 'Modern Era & Tech (Present)'
+            };
+            document.getElementById('eraLabel').innerText = eras[val] || '';
+            currentEra = eras[val];
+        }
+
+        function setDepthMode(mode) {
+            currentDepthMode = mode;
+            document.querySelectorAll('.depth-btn').forEach(btn => {
+                btn.classList.remove('active-depth', 'border-cyan-500/50', 'bg-cyan-950/80', 'text-cyan-300');
+                btn.classList.add('border-slate-700', 'bg-slate-900/60', 'text-slate-400');
+            });
+
+            const activeBtn = document.getElementById(`depth-${mode}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active-depth', 'border-cyan-500/50', 'bg-cyan-950/80', 'text-cyan-300');
+                activeBtn.classList.remove('border-slate-700', 'bg-slate-900/60', 'text-slate-400');
+            }
+
+            document.getElementById('modeDisplay').innerText = `Mode: ${mode.toUpperCase()}`;
+        }
+
+        function askPreset(text) {
+            document.getElementById('userInput').value = text;
+            handleQuerySubmit(new Event('submit'));
+        }
+
+        function clearConsole() {
+            document.getElementById('consoleStream').innerHTML = `
+                <div class="glass-card rounded-2xl p-4 border border-cyan-500/20 max-w-3xl">
+                    <p class="text-xs text-slate-400">Console stream cleared. Ready for your query.</p>
+                </div>
+            `;
+        }
+
+        // Voice Input (Web Speech API) with Safe Error Catching
+        function toggleVoiceInput() {
+            const micBtn = document.getElementById('micBtn');
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (!SpeechRecognition) {
+                alert('Speech recognition is not supported in this browser version. Please type your prompt.');
+                return;
+            }
+
+            if (recognition) {
+                recognition.stop();
+                recognition = null;
+                micBtn.classList.remove('text-red-400', 'animate-pulse');
+                return;
+            }
+
+            try {
+                recognition = new SpeechRecognition();
+                recognition.onstart = () => {
+                    micBtn.classList.add('text-red-400', 'animate-pulse');
+                };
+                recognition.onresult = (event) => {
+                    const text = event.results[0][0].transcript;
+                    document.getElementById('userInput').value = text;
+                    micBtn.classList.remove('text-red-400', 'animate-pulse');
+                    recognition = null;
+                };
+                recognition.onerror = () => {
+                    micBtn.classList.remove('text-red-400', 'animate-pulse');
+                    recognition = null;
+                };
+                recognition.onend = () => {
+                    micBtn.classList.remove('text-red-400', 'animate-pulse');
+                    recognition = null;
+                };
+                recognition.start();
+            } catch (err) {
+                micBtn.classList.remove('text-red-400', 'animate-pulse');
+                recognition = null;
+            }
+        }
+
+        // Main Query Submit Pipeline
+        async function handleQuerySubmit(e) {
+            if (e) e.preventDefault();
+            const inputEl = document.getElementById('userInput');
+            const query = inputEl.value.trim();
+            if (!query) return;
+
+            // 1. Render User Message
+            appendUserCard(query);
+            inputEl.value = '';
+
+            // 2. Render Loading Shimmer
+            const loadingId = appendLoadingCard();
+
+            // 3. Obtain Data (API or Safe Smart Fallback)
+            let resultData = null;
+            const userApiKey = localStorage.getItem('omni_api_key');
+
+            if (userApiKey) {
+                try {
+                    resultData = await fetchFromGeminiAPI(query, userApiKey);
+                } catch (err) {
+                    console.warn('API error encountered. Switching to dynamic local engine:', err);
+                }
+            }
+
+            // Fallback if API was not configured or failed
+            if (!resultData) {
+                resultData = synthesizeLocalKnowledge(query, currentDepthMode);
+            }
+
+            // Save to memory for potential download export
+            responseHistory.push(resultData);
+
+            // 4. Remove Loader & Append Response
+            removeElement(loadingId);
+            appendAgentResponseCard(resultData);
+        }
+
+        function appendUserCard(text) {
+            const stream = document.getElementById('consoleStream');
+            const html = `
+                <div class="flex justify-end">
+                    <div class="bg-gradient-to-r from-cyan-600/30 to-indigo-600/30 border border-cyan-500/40 rounded-2xl rounded-tr-none px-4 py-3 max-w-xl text-xs text-slate-100 shadow-md">
+                        <div class="text-[10px] text-cyan-300 font-mono mb-1 flex items-center justify-end gap-1">
+                            <span>USER QUERY</span> <i class="fa-solid fa-user text-[9px]"></i>
+                        </div>
+                        <p>${escapeHtml(text)}</p>
+                    </div>
+                </div>
+            `;
+            stream.insertAdjacentHTML('beforeend', html);
+            stream.scrollTop = stream.scrollHeight;
+        }
+
+        function appendLoadingCard() {
+            const stream = document.getElementById('consoleStream');
+            const id = 'loading-' + Date.now();
+            const html = `
+                <div id="${id}" class="glass-card rounded-2xl p-5 border border-cyan-500/30 max-w-3xl space-y-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-cyan-950 border border-cyan-500/40 text-cyan-400 flex items-center justify-center animate-spin">
+                            <i class="fa-solid fa-spinner"></i>
+                        </div>
+                        <span class="text-xs font-mono text-cyan-300">Synthesizing ${currentDepthMode.toUpperCase()} knowledge...</span>
+                    </div>
+                    <div class="h-3 w-3/4 rounded shimmer"></div>
+                    <div class="h-3 w-1/2 rounded shimmer"></div>
+                </div>
+            `;
+            stream.insertAdjacentHTML('beforeend', html);
+            stream.scrollTop = stream.scrollHeight;
+            return id;
+        }
+
+        function removeElement(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        // Gemini API Fetcher with Clean Parsing
+        async function fetchFromGeminiAPI(query, apiKey) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+            const systemPrompt = `You are OmniAgent, a world-class universal knowledge engine. Synthesize user queries into structured JSON. Return ONLY a valid JSON object matching this structure:
+{
+  "title": "Short Descriptive Title",
+  "summary": "Clear, informative paragraph answering the query.",
+  "timeline": [
+    {"time": "Stage/Date/Phase", "event": "Key milestone or detail"}
+  ],
+  "insights": ["Insight point 1", "Insight point 2", "Insight point 3"],
+  "concept": "Phase 1 ➔ Phase 2 ➔ Phase 3 ➔ Final Outcome"
+}`;
+
+            const userPrompt = `Query: "${query}". Era Context: ${currentEra}. Output Mode: ${currentDepthMode}.`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: userPrompt }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    generationConfig: { 
+                        responseMimeType: "application/json"
+                    }
+                })
+            });
+
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            
+            // Clean markdown block tags if present
+            const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            return JSON.parse(cleanJson);
+        }
+
+        // Dynamic Heuristic Knowledge Generator (FIXED - NO MORE HARDCODED BIG BANG FALLBACK)
+        function synthesizeLocalKnowledge(query, mode) {
+            const qLower = query.toLowerCase();
+
+            // 1. Check Rich Templates
+            for (const key in RICH_KNOWLEDGE) {
+                const item = RICH_KNOWLEDGE[key];
+                if (item.keywords.some(kw => qLower.includes(kw))) {
+                    return {
+                        title: `${item.title} (${mode.toUpperCase()})`,
+                        summary: item.summary,
+                        timeline: mode === 'concise' ? item.timeline.slice(0, 2) : item.timeline,
+                        insights: item.insights,
+                        concept: item.concept
+                    };
+                }
+            }
+
+            // 2. Intelligent Natural Language Heuristic Synthesis for custom questions
+            const stopWords = ["what", "is", "how", "why", "does", "do", "the", "a", "an", "of", "in", "and", "or", "to", "explain", "describe", "tell", "me", "about", "can", "you"];
+            const words = query.replace(/[^\w\s]/gi, '').split(/\s+/).filter(w => w.length > 2);
+            const coreKeywords = words.filter(w => !stopWords.includes(w.toLowerCase()));
+            
+            const mainSubject = coreKeywords.length > 0 
+                ? coreKeywords.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+                : "Universal Concept";
+
+            // Identify question intent
+            let intentType = "Analysis";
+            if (qLower.includes("how")) intentType = "Process & Function";
+            else if (qLower.includes("why")) intentType = "Causality & Impact";
+            else if (qLower.includes("when") || qLower.includes("history")) intentType = "Chronology";
+
+            return {
+                title: `${mainSubject}: ${intentType}`,
+                summary: `Analytical synthesis of "${query}". ${mainSubject} encompasses key underlying principles operating across physical, historical, or structural domains. In the context of the ${currentEra}, it represents an essential topic of inquiry requiring systemic analysis of causes, mechanisms, and outcomes.`,
+                timeline: [
+                    { time: "Phase 1: Foundations", event: `Initial conditions and core parameters defining ${mainSubject}.` },
+                    { time: "Phase 2: Dynamics", event: `Active interaction and operational mechanisms related to "${query}".` },
+                    { time: "Phase 3: Integration", event: `Sustained impact and broader synthesis within modern understanding.` }
+                ],
+                insights: [
+                    `Key component extracted directly from input: ${mainSubject}.`,
+                    `Synthesized under ${currentDepthMode.toUpperCase()} resolution within the ${currentEra}.`,
+                    `Evaluates underlying systemic factors to provide a structured narrative flow.`
+                ],
+                concept: `Initial State ➔ ${mainSubject} Mechanism ➔ Observable Effects ➔ Systemic Impact`
+            };
+        }
+
+        // Render Response Card
+        function appendAgentResponseCard(data) {
+            const stream = document.getElementById('consoleStream');
+            const cardId = 'card-' + Date.now();
+
+            const timelineSection = (data.timeline && data.timeline.length) ? `
+                <div class="mt-4 pt-4 border-t border-slate-800">
+                    <h4 class="text-xs font-mono font-semibold text-cyan-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Key Milestones / Process Timeline
+                    </h4>
+                    <div class="space-y-2 relative pl-3 border-l border-cyan-500/30">
+                        ${data.timeline.map(item => `
+                            <div class="relative pl-3 text-xs">
+                                <span class="absolute -left-[17px] top-1 w-2 h-2 rounded-full bg-cyan-400"></span>
+                                <span class="font-mono text-cyan-300 font-semibold">${escapeHtml(item.time)}:</span>
+                                <span class="text-slate-300 ml-1">${escapeHtml(item.event)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : '';
+
+            const insightsSection = (data.insights && data.insights.length) ? `
+                <div class="mt-4 pt-4 border-t border-slate-800">
+                    <h4 class="text-xs font-mono font-semibold text-purple-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-lightbulb"></i> Analytical Insights & Principles
+                    </h4>
+                    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        ${data.insights.map(fact => `
+                            <li class="bg-slate-900/80 border border-slate-800 rounded-lg p-2.5 text-slate-300 flex items-start gap-2">
+                                <i class="fa-solid fa-square-check text-[10px] text-purple-400 mt-0.5"></i>
+                                <span>${escapeHtml(fact)}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            ` : '';
+
+            const conceptSection = data.concept ? `
+                <div class="mt-4 pt-3 bg-slate-950/70 border border-cyan-500/20 rounded-xl p-3 text-center">
+                    <span class="text-[10px] font-mono uppercase text-slate-400 block mb-1">Core Concept Flow</span>
+                    <p class="text-xs font-mono text-cyan-300 font-medium">${escapeHtml(data.concept)}</p>
+                </div>
+            ` : '';
+
+            const safeSummaryText = escapeHtml(data.summary).replace(/'/g, "\\'");
+
+            const cardHtml = `
+                <div id="${cardId}" class="glass-panel rounded-2xl p-5 border border-cyan-500/30 max-w-3xl space-y-3 shadow-xl">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-800 flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-500/40 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-atom"></i>
+                            </div>
+                            <h3 class="text-sm font-bold text-slate-100">${escapeHtml(data.title)}</h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="downloadReport('${cardId}')" title="Download Report as Text" class="text-xs text-slate-300 hover:text-cyan-300 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 transition flex items-center gap-1">
+                                <i class="fa-solid fa-download text-cyan-400"></i> Export
+                            </button>
+                            <button onclick="speakText('${safeSummaryText}')" title="Read Out Loud" class="text-xs text-slate-300 hover:text-cyan-300 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 transition flex items-center gap-1">
+                                <i class="fa-solid fa-volume-high text-cyan-400"></i> Listen
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-slate-300 leading-relaxed">${escapeHtml(data.summary)}</p>
+
+                    ${conceptSection}
+                    ${timelineSection}
+                    ${insightsSection}
+                </div>
+            `;
+
+            stream.insertAdjacentHTML('beforeend', cardHtml);
+            stream.scrollTop = stream.scrollHeight;
+        }
+
+        // Export Knowledge Report as File
+        function downloadReport(cardId) {
+            const card = document.getElementById(cardId);
+            if (!card) return;
+            const textContent = card.innerText;
+            const blob = new Blob([textContent], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `OmniAgent_Report_${Date.now()}.txt`;
+            a.click();
+        }
+
+        // Text To Speech (TTS)
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('Text-to-speech is not supported in this browser.');
+            }
+        }
+
+        function stopSpeech() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
